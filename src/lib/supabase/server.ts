@@ -104,3 +104,63 @@ export async function createAdminUser(email: string, password: string) {
     return { success: false, error: error.message }
   }
 }
+
+// Função para update o usuário administrador
+export async function updateParticipantSimple(
+  participantId: string,
+  updates: {
+    full_name?: string
+    email?: string
+    phone?: string
+    payment_status?: string
+  },
+) {
+  try {
+    const { data, error } = await supabaseAdmin.rpc("update_participant", {
+      p_id: participantId,
+      p_full_name: updates.full_name,
+      p_email: updates.email,
+      p_phone: updates.phone,
+      p_payment_status: updates.payment_status,
+    })
+    if (error) {
+      console.error("[Server Action Simple] Erro ao atualizar participante:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("[Server Action Simple] Exceção ao atualizar participante:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function getFileForDownload(fileUrl: string) {
+  try {
+    const storageBaseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
+
+    if (!fileUrl.includes(storageBaseUrl)) {
+      return { success: true, url: fileUrl }
+    }
+
+    const filePath = fileUrl.replace(storageBaseUrl, "")
+    const [bucket, ...pathParts] = filePath.split("/")
+    const path = pathParts.join("/")
+
+    console.log("Bucket:", bucket)
+    console.log("Path:", path)
+
+    // Gerar um URL de download assinado que funciona mesmo com RLS
+    const { data, error } = await supabaseAdmin.storage.from('rifas').createSignedUrl(path, 60) // URL válida por 60 segundos
+    console.log(data)
+    if (error) {
+      console.error("Erro ao criar URL assinada:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, url: data.signedUrl }
+  } catch (error: any) {
+    console.error("Erro ao processar URL para download:", error)
+    return { success: false, error: error.message }
+  }
+}

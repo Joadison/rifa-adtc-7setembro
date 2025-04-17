@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Rifas Online - ADTC 7 de Setembro 1",
+  title: "Rifa Online - ADTC 7 de Setembro 1",
   description: "Participe da rifa online e concorra a prêmio incrível",
 };
 

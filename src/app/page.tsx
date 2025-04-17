@@ -108,7 +108,7 @@ export default async function Home() {
             <CardContent>
               <div className="w-full max-w-[100rem] h-[500px] bg-muted rounded-md flex items-center justify-center mb-4 overflow-hidden mx-auto">
                 <video
-                  src="/igreja.MOV"
+                  src="https://iiisjlgwrr.ufs.sh/f/R1WGWTYNvh5q66r3KbU5wPWcuVhsmyZGUB2xbvXqrTF7n1fL"
                   className="max-h-full max-w-full transition-transform hover:scale-105"
                   autoPlay
                   muted={false}

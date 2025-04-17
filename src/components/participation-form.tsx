@@ -49,6 +49,9 @@ export function ParticipationForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const email = "eloidecarvalho0717@gmail.com";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,7 +101,7 @@ export function ParticipationForm({
         } catch (uploadError) {
           console.error("Erro no upload:", uploadError);
         }
-      } 
+      }
 
       // Preparar dados para envio
       const formData = {
@@ -153,6 +156,16 @@ export function ParticipationForm({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setProofFile(e.target.files[0]);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Erro ao copiar:", err);
     }
   };
 
@@ -301,11 +314,16 @@ export function ParticipationForm({
               <p className="text-sm mb-2">
                 Faça o pagamento via PIX para a chave abaixo:
               </p>
-              <div className="p-2 bg-background rounded border mb-2">
-                <p className="font-mono text-sm select-all">
-                  email@exemplo.com
-                </p>
+              <div
+                className="p-2 bg-background rounded border mb-2"
+                onClick={handleCopy}
+                title="Clique para copiar"
+              >
+                <p className="font-mono text-sm select-all">{email}</p>
               </div>
+              {copied && (
+                <span className="text-xs text-green-500">Copiado PIX!</span>
+              )}
               <p className="text-sm mb-2">
                 Valor:{" "}
                 <span className="font-medium text-primary">

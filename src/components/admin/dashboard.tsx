@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+//import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -21,24 +21,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  BarChart3,
-  Download,
-  Eye,
-  Home,
-  Search,
-  Ticket,
-  Trophy,
-  Users,
-} from "lucide-react";
-import {
+import { BarChart3, Eye, Home, Pencil, Trophy, Users } from "lucide-react";
+/* import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import type { Rifa, Participant } from "@/lib/supabase/client";
+} from "@/components/ui/select"; */
+import {
+  type Rifa,
+  type Participant,
+} from "@/lib/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { ParticipantForm } from "./participantForm";
+import { updateParticipantSimple } from "@/lib/supabase/server";
+import { FileDownload } from "../file-download";
 
 interface AdminDashboardProps {
   rifas: Rifa[];
@@ -46,16 +49,31 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
-  console.log(rifas)
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRifaId, setSelectedRifaId] = useState<string>("all");
+  //const [searchTerm, setSearchTerm] = useState("");
+  //const [selectedRifaId, setSelectedRifaId] = useState<string>("all");
   const [filteredRifas, setFilteredRifas] = useState<Rifa[]>(rifas);
   const [filteredParticipants, setFilteredParticipants] =
     useState<Participant[]>(participants);
 
+  const [editingParticipant, setEditingParticipant] =
+    useState<Participant | null>(null);
+
+  const handleEditParticipant = (participant: Participant) => {
+    setEditingParticipant(participant);
+  };
+
+  const handleUpdateParticipant = async (updatedData: Participant) => {
+    try {
+      await updateParticipantSimple(updatedData.id, updatedData);
+      setEditingParticipant(null);
+    } catch (error) {
+      console.error("Erro ao atualizar participante:", error);
+    }
+  };
+
   // Filtrar rifas e participantes quando o ID da rifa selecionada mudar
-  useEffect(() => {
+  /*  useEffect(() => {
     if (selectedRifaId === "all") {
       setFilteredRifas(rifas);
       setFilteredParticipants(
@@ -90,7 +108,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         })
       );
     }
-  }, [selectedRifaId, searchTerm, rifas, participants]);
+  }, [selectedRifaId, searchTerm, rifas, participants]); */
 
   // Calcular estatísticas
   const totalParticipants = filteredParticipants.length;
@@ -124,14 +142,14 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             <BarChart3 className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
-          <Button
+          {/* <Button
             variant={activeTab === "rifas" ? "default" : "ghost"}
             className="w-full justify-start"
             onClick={() => setActiveTab("rifas")}
           >
             <Ticket className="mr-2 h-4 w-4" />
             Rifas
-          </Button>
+          </Button> */}
           <Button
             variant={activeTab === "participants" ? "default" : "ghost"}
             className="w-full justify-start"
@@ -140,14 +158,14 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             <Users className="mr-2 h-4 w-4" />
             Participantes
           </Button>
-          <Button
+          {/* <Button
             variant={activeTab === "winners" ? "default" : "ghost"}
             className="w-full justify-start"
             onClick={() => setActiveTab("winners")}
           >
             <Trophy className="mr-2 h-4 w-4" />
             Ganhadores
-          </Button>
+          </Button> */}
         </nav>
         <div className="mt-auto pt-4">
           <Button variant="outline" asChild className="w-full">
@@ -174,7 +192,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         </div>
 
         {/* Rifa Selector */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <Select value={selectedRifaId} onValueChange={setSelectedRifaId}>
@@ -202,7 +220,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Desktop Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -369,7 +387,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="rifas">
+          {/* <TabsContent value="rifas">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-primary">Rifas</h1>
               <Button>Nova Rifa</Button>
@@ -435,10 +453,10 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="participants">
-            <div className="flex justify-between items-center mb-6">
+            {/* <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-primary">Participantes</h1>
               <div className="flex gap-2">
                 <Button variant="outline">
@@ -446,7 +464,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                   Exportar
                 </Button>
               </div>
-            </div>
+            </div> */}
 
             <Card>
               <CardContent className="p-0">
@@ -455,7 +473,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                     <TableRow>
                       <TableHead>Nome</TableHead>
                       <TableHead>Contato</TableHead>
-                      <TableHead>Número da Sorte</TableHead>
+                      <TableHead>Comprovante</TableHead>
                       <TableHead>Pagamento</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
@@ -473,13 +491,18 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                             {participant.phone}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <Badge
                             variant="outline"
                             className="bg-primary/10 border-primary/30"
                           >
                             {participant.lucky_number}
                           </Badge>
+                        </TableCell> */}
+                        <TableCell>
+                          {participant.proof_of_payment_url
+                            ? <FileDownload url={participant.proof_of_payment_url}/>
+                            : "Sem Comprovante"}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -507,9 +530,20 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                             "pt-BR"
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon">
+                        <TableCell className="text-right space-x-1">
+                          {/* <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleViewParticipant(participant)}
+                          >
                             <Eye className="h-4 w-4" />
+                          </Button> */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditParticipant(participant)}
+                          >
+                            <Pencil className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -520,7 +554,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             </Card>
           </TabsContent>
 
-          <TabsContent value="winners">
+         {/*  <TabsContent value="winners">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-primary">Ganhadores</h1>
             </div>
@@ -649,9 +683,26 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
+      {editingParticipant && (
+        <AlertDialog
+          open={!!editingParticipant}
+          onOpenChange={() => setEditingParticipant(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Editar Participante</AlertDialogTitle>
+            </AlertDialogHeader>
+            <ParticipantForm
+              initialData={editingParticipant}
+              onSubmit={handleUpdateParticipant}
+              onCancel={() => setEditingParticipant(null)}
+            />
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
