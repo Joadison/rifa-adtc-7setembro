@@ -14,6 +14,7 @@ import { getRifas } from "@/lib/supabase/client";
 
 export default async function Home() {
   const rifas = await getRifas();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 mb-10">
@@ -108,7 +109,7 @@ export default async function Home() {
             <CardContent>
               <div className="w-full max-w-[100rem] h-[500px] bg-muted rounded-md flex items-center justify-center mb-4 overflow-hidden mx-auto">
                 <video
-                  src="https://iiisjlgwrr.ufs.sh/f/R1WGWTYNvh5q66r3KbU5wPWcuVhsmyZGUB2xbvXqrTF7n1fL"
+                  src="https://iiisjlgwrr.ufs.sh/f/R1WGWTYNvh5qNA2tV1oh1G4JHifUqzC3Qv8oDVIpxOrnTbku"
                   className="max-h-full max-w-full transition-transform hover:scale-105"
                   autoPlay
                   muted={false}

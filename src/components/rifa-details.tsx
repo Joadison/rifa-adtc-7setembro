@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Info, Calendar, Tag, Users } from "lucide-react";
 import { ParticipationForm } from "@/components/participation-form";
 import { NumberSelector } from "@/components/number-selector";
-import type { Rifa } from "@/lib/supabase/client";
+import type { Rifa } from "@/lib/supabase/types";
 
 interface RifaDetailsProps {
   rifa: Rifa;

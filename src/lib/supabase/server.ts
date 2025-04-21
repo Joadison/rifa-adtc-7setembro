@@ -113,6 +113,7 @@ export async function updateParticipantSimple(
     email?: string
     phone?: string
     payment_status?: string
+    proof_of_payment_url?: string
   },
 ) {
   try {
@@ -122,6 +123,7 @@ export async function updateParticipantSimple(
       p_email: updates.email,
       p_phone: updates.phone,
       p_payment_status: updates.payment_status,
+      p_proof_of_payment_url: updates.proof_of_payment_url,
     })
     if (error) {
       console.error("[Server Action Simple] Erro ao atualizar participante:", error)
@@ -135,6 +137,7 @@ export async function updateParticipantSimple(
   }
 }
 
+//Função Download File
 export async function getFileForDownload(fileUrl: string) {
   try {
     const storageBaseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
@@ -147,12 +150,8 @@ export async function getFileForDownload(fileUrl: string) {
     const [bucket, ...pathParts] = filePath.split("/")
     const path = pathParts.join("/")
 
-    console.log("Bucket:", bucket)
-    console.log("Path:", path)
-
     // Gerar um URL de download assinado que funciona mesmo com RLS
     const { data, error } = await supabaseAdmin.storage.from('rifas').createSignedUrl(path, 60) // URL válida por 60 segundos
-    console.log(data)
     if (error) {
       console.error("Erro ao criar URL assinada:", error)
       return { success: false, error: error.message }
@@ -163,4 +162,76 @@ export async function getFileForDownload(fileUrl: string) {
     console.error("Erro ao processar URL para download:", error)
     return { success: false, error: error.message }
   }
+}
+
+//Função delete participant
+export async function deletParticipant(participantId: string) {
+  try{
+    const { data: participantNumbers, error: fetchError } = await supabaseAdmin
+      .from("participant_numbers")
+      .select("id, rifa_id")
+      .eq("participant_id", participantId);
+
+    if (fetchError) {
+      console.error("Erro ao buscar participant_numbers:", fetchError);
+      throw fetchError;
+    }
+    
+    if (!participantNumbers || participantNumbers.length === 0) {
+      console.warn("Nenhum número encontrado para esse participante.");
+      return { success: false, message: "Nenhum número associado ao participante." };
+    }
+
+    const soldToRemove = participantNumbers.length;
+    const rifaId = participantNumbers[0].rifa_id;
+    
+    const { data: rifaData, error: fetchRifaError } = await supabaseAdmin
+      .from("rifas")
+      .select("sold_numbers")
+      .eq("id", rifaId)
+      .single();
+
+    if (fetchRifaError) {
+      console.error("Erro ao buscar rifa:", fetchRifaError);
+      throw fetchRifaError;
+    }
+
+    const newSoldNumbers = Math.max((rifaData?.sold_numbers || 0) - soldToRemove, 0);
+    const { error: updateError } = await supabaseAdmin
+      .from("rifas")
+      .update({ sold_numbers: newSoldNumbers })
+      .eq("id", rifaId);
+
+    if (updateError) {
+      console.error(`Erro ao atualizar sold_numbers para a rifa ${rifaId}:`, updateError);
+      throw updateError;
+    }
+
+    const { error: deleteNumbersError } = await supabaseAdmin
+      .from("participant_numbers")
+      .delete()
+      .eq("participant_id", participantId);
+
+    if (deleteNumbersError) {
+      console.error("Erro ao deletar participant_numbers:", deleteNumbersError);
+      throw deleteNumbersError;
+    }
+
+    const { error: deleteParticipantError } = await supabaseAdmin
+      .from("participants")
+      .delete()
+      .eq("id", participantId);
+
+    if (deleteParticipantError) {
+      console.error("Erro ao deletar participant:", deleteParticipantError);
+      throw deleteParticipantError;
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error("Erro inesperado ao deletar participante:", error);
+    return { success: false, error };
+  }
+
 }

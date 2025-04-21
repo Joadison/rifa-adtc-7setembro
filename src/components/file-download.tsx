@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Loader2, X } from "lucide-react";
+import { Download, Eye, Loader2, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getFileForDownload } from "@/lib/supabase/server";
 import {
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogOverlay,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 

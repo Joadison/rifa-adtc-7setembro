@@ -19,8 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Upload } from "lucide-react";
-import { validateCPF } from "@/lib/utils";
-import { supabase } from "@/lib/supabase/client";
+import { getRandomNumber, validateCPF } from "@/lib/utils";
+import { createParticipant, getSoldNumbersByRifaId, saveParticipantNumbers, supabase, updateRifaSoldNumbers } from "@/lib/supabase/client";
 
 interface ParticipationFormProps {
   selectedNumbers: number[];
@@ -103,45 +103,32 @@ export function ParticipationForm({
         }
       }
 
-      // Preparar dados para envio
-      const formData = {
-        fullName: values.fullName,
+      const luckyNumber = getRandomNumber(100000, 999999).toString();
+      const participantData = {
+        full_name: values.fullName,
         cpf: values.cpf.replace(/[^\d]/g, ""),
         email: values.email,
         phone: values.phone.replace(/[^\d]/g, ""),
         address: values.address,
         city: values.city,
         state: values.state,
-        zipCode: values.zipCode.replace(/[^\d]/g, ""),
-        paymentMethod: values.paymentMethod,
-        proofOfPaymentUrl,
-        rifaId,
-        selectedNumbers,
-      };
+        zip_code: values.zipCode.replace(/[^\d]/g, ""),
+        payment_method: values.paymentMethod,
+        payment_status: "pending" as const,
+        proof_of_payment_url: proofOfPaymentUrl || '',
+        lucky_number: luckyNumber,
+      }
 
       try {
-        const response = await fetch("/api/participants", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const textResponse = await response.text();
-          throw new Error(
-            "Resposta inesperada do servidor. Verifique os logs para mais detalhes."
-          );
-        }
-        const responseData = await response.json();
-        if (!response.ok) {
-          throw new Error(
-            responseData.error || "Erro ao processar solicitação"
-          );
+        const newParticipant = await  createParticipant(participantData)
+        await saveParticipantNumbers(newParticipant.id, rifaId, selectedNumbers)
+        const soldNumbers = await getSoldNumbersByRifaId(rifaId)
+        await updateRifaSoldNumbers(rifaId, soldNumbers.length)
+        if (!newParticipant) {
+          throw new Error("Erro ao processar solicitação");
         }
         router.push(
-          `/confirmation?rifaId=${rifaId}&luckyNumber=${responseData.luckyNumber}`
+          `/confirmation?rifaId=${rifaId}&luckyNumber=${newParticipant.lucky_number}`
         );
       } catch (fetchError) {
         console.error("Erro na requisição:", fetchError);

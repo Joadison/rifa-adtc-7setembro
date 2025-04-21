@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
+import { Participant, Rifa } from "./types"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -9,47 +10,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Tipos para as tabelas do Supabase
-export type Rifa = {
-  id: string
-  title: string
-  description: string
-  price: number
-  total_numbers: number
-  sold_numbers: number
-  image_url: string
-  end_date: string
-  status: "active" | "completed" | "cancelled"
-  created_at: string
-}
-
-export type Participant = {
-  id: string
-  full_name: string
-  cpf: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  payment_method: "pix" | "cash"
-  payment_status: "pending" | "confirmed"
-  proof_of_payment_url?: string | null
-  lucky_number: string
-  created_at: string
-  updated_at?: string
-}
-
-export type ParticipantNumber = {
-  id: string
-  participant_id: string
-  rifa_id: string
-  number: number
-  created_at: string
-}
-
-// Funções para interagir com o Supabase
 export async function getRifas() {
   const { data, error } = await supabase.from("rifas").select("*").order("created_at", { ascending: false })
 
@@ -147,7 +107,6 @@ export async function uploadPaymentProof(file: File, participantId: string) {
     throw error
   }
 
-  // Obter URL pública do arquivo
   const { data: urlData } = supabase.storage.from("rifas").getPublicUrl(filePath)
 
   return urlData.publicUrl

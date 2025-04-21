@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle, Share2, Ticket } from "lucide-react";
-import type { Rifa } from "@/lib/supabase/client";
+import type { Rifa } from "@/lib/supabase/types";
 
 interface ConfirmationDetailsProps {
   rifa: Rifa;

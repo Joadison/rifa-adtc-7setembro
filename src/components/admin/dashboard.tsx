@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, Eye, Home, Pencil, Trophy, Users } from "lucide-react";
+import { BarChart3, Home, Pencil, Trash2, Users } from "lucide-react";
 /* import {
   Select,
   SelectContent,
@@ -29,10 +29,7 @@ import { BarChart3, Eye, Home, Pencil, Trophy, Users } from "lucide-react";
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"; */
-import {
-  type Rifa,
-  type Participant,
-} from "@/lib/supabase/client";
+import { type Rifa, type Participant } from "@/lib/supabase/types";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -40,7 +37,10 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { ParticipantForm } from "./participantForm";
-import { updateParticipantSimple } from "@/lib/supabase/server";
+import {
+  deletParticipant,
+  updateParticipantSimple,
+} from "@/lib/supabase/server";
 import { FileDownload } from "../file-download";
 
 interface AdminDashboardProps {
@@ -61,6 +61,12 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
 
   const handleEditParticipant = (participant: Participant) => {
     setEditingParticipant(participant);
+  };
+
+  const handleDelete = async (participant: Participant) => {
+    console.log(participant);
+    const delet = await deletParticipant(participant.id);
+    console.log(delet);
   };
 
   const handleUpdateParticipant = async (updatedData: Participant) => {
@@ -488,7 +494,14 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                         <TableCell>
                           <div>{participant.email}</div>
                           <div className="text-muted-foreground text-sm">
-                            {participant.phone}
+                            <Link
+                              href={`https://wa.me/55${participant.phone}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-600 underline"
+                            >
+                              {participant.phone}
+                            </Link>
                           </div>
                         </TableCell>
                         {/* <TableCell>
@@ -500,9 +513,13 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                           </Badge>
                         </TableCell> */}
                         <TableCell>
-                          {participant.proof_of_payment_url
-                            ? <FileDownload url={participant.proof_of_payment_url}/>
-                            : "Sem Comprovante"}
+                          {participant.proof_of_payment_url ? (
+                            <FileDownload
+                              url={participant.proof_of_payment_url}
+                            />
+                          ) : (
+                            "Sem Comprovante"
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -539,11 +556,17 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                             <Eye className="h-4 w-4" />
                           </Button> */}
                           <Button
-                            variant="ghost"
                             size="icon"
                             onClick={() => handleEditParticipant(participant)}
                           >
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleDelete(participant)}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -554,7 +577,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             </Card>
           </TabsContent>
 
-         {/*  <TabsContent value="winners">
+          {/*  <TabsContent value="winners">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-primary">Ganhadores</h1>
             </div>
