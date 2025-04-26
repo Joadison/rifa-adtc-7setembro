@@ -315,7 +315,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
       header: "Vendidos",
       enableSorting: false,
       cell({ row }) {
-        return row.original.sold_numbers / row.original.total_numbers;
+        return row.original.sold_numbers;
       },
     },
     {
