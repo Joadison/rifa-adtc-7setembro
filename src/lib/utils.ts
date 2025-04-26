@@ -66,3 +66,64 @@ export function formatCurrency(value: number): string {
     currency: "BRL",
   }).format(value)
 }
+
+export function geradorPix(valor: number) {
+  function formatField(id: string, value: string): string {
+    const length = value.length.toString().padStart(2, '0');
+    return `${id}${length}${value}`;
+  }  
+
+  function calculateCRC16(payload: string): string {
+    const polynomial = 0x1021;
+    let result = 0xFFFF;
+
+    for (let i = 0; i < payload.length; i++) {
+      result ^= payload.charCodeAt(i) << 8;
+      for (let j = 0; j < 8; j++) {
+        if ((result & 0x8000) !== 0) {
+          result = (result << 1) ^ polynomial;
+        } else {
+          result <<= 1;
+        }
+        result &= 0xFFFF;
+      }
+    }
+
+    return result.toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  const pixKey = 'eloidecarvalho0717@gmail.com';
+  const merchantName = 'Eloi de Carvalho Junior';
+  const merchantCity = 'FORTALEZA';
+  const transactionAmount = valor;
+  const transactionId = '***';
+
+  const gui = formatField('00', 'br.gov.bcb.pix');
+  const key = formatField('01', pixKey);
+  const merchantAccountInfo = formatField('26', gui + key);
+
+  const payloadFormatIndicator = formatField('00', '01');
+  const merchantCategoryCode = formatField('52', '0000');
+  const transactionCurrency = formatField('53', '986');
+  const transactionAmountField = formatField('54', transactionAmount.toFixed(2));
+  const countryCode = formatField('58', 'BR');
+  const merchantNameField = formatField('59', merchantName);
+  const merchantCityField = formatField('60', merchantCity);
+  const additionalDataField = formatField('62', formatField('05', transactionId));
+
+  let payload = payloadFormatIndicator +
+    merchantAccountInfo +
+    merchantCategoryCode +
+    transactionCurrency +
+    transactionAmountField +
+    countryCode +
+    merchantNameField +
+    merchantCityField +
+    additionalDataField +
+    '6304';
+
+  const crc = calculateCRC16(payload);
+  payload += crc;
+
+  return payload;
+}

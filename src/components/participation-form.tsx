@@ -19,8 +19,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, Upload } from "lucide-react";
-import { getRandomNumber, validateCPF } from "@/lib/utils";
-import { createParticipant, getSoldNumbersByRifaId, saveParticipantNumbers, supabase, updateRifaSoldNumbers } from "@/lib/supabase/client";
+import { geradorPix, getRandomNumber, validateCPF } from "@/lib/utils";
+import {
+  createParticipant,
+  getSoldNumbersByRifaId,
+  saveParticipantNumbers,
+  supabase,
+  updateRifaSoldNumbers,
+} from "@/lib/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 
 interface ParticipationFormProps {
   selectedNumbers: number[];
@@ -51,7 +58,7 @@ export function ParticipationForm({
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const email = "eloidecarvalho0717@gmail.com";
+  const payloadPix = geradorPix(totalValue);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -115,15 +122,19 @@ export function ParticipationForm({
         zip_code: values.zipCode.replace(/[^\d]/g, ""),
         payment_method: values.paymentMethod,
         payment_status: "pending" as const,
-        proof_of_payment_url: proofOfPaymentUrl || '',
+        proof_of_payment_url: proofOfPaymentUrl || "",
         lucky_number: luckyNumber,
-      }
+      };
 
       try {
-        const newParticipant = await  createParticipant(participantData)
-        await saveParticipantNumbers(newParticipant.id, rifaId, selectedNumbers)
-        const soldNumbers = await getSoldNumbersByRifaId(rifaId)
-        await updateRifaSoldNumbers(rifaId, soldNumbers.length)
+        const newParticipant = await createParticipant(participantData);
+        await saveParticipantNumbers(
+          newParticipant.id,
+          rifaId,
+          selectedNumbers
+        );
+        const soldNumbers = await getSoldNumbersByRifaId(rifaId);
+        await updateRifaSoldNumbers(rifaId, soldNumbers.length);
         if (!newParticipant) {
           throw new Error("Erro ao processar solicitação");
         }
@@ -148,7 +159,7 @@ export function ParticipationForm({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(email);
+      await navigator.clipboard.writeText(payloadPix);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -301,12 +312,15 @@ export function ParticipationForm({
               <p className="text-sm mb-2">
                 Faça o pagamento via PIX para a chave abaixo:
               </p>
+              <div className="flex justify-left my-4">
+                <QRCodeSVG value={payloadPix} size={200} className="boder border-2"/>
+              </div>
               <div
                 className="p-2 bg-background rounded border mb-2"
                 onClick={handleCopy}
                 title="Clique para copiar"
               >
-                <p className="font-mono text-sm select-all">{email}</p>
+                <p className="font-mono text-sm select-all">{payloadPix}</p>
               </div>
               {copied && (
                 <span className="text-xs text-green-500">Copiado PIX!</span>

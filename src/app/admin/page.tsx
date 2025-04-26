@@ -7,10 +7,5 @@ export default async function AdminPage() {
   const participantsData = await getParticipantsByRifaId(
     "0a25254a-3a5a-40fc-8bf8-0e4bce7303f4"
   );
-  return (
-    <>
-      <AdminHeader />
-      <AdminDashboard rifas={rifasData} participants={participantsData} />
-    </>
-  );
+  return <AdminDashboard rifas={rifasData} participants={participantsData} />;
 }

@@ -27,6 +27,7 @@ export type Participant = {
     lucky_number: string
     created_at: string
     updated_at?: string
+    participant_numbers?: ParticipantNumber[]
 }
 
 export type ParticipantNumber = {

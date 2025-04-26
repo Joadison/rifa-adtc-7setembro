@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Eye, Loader2, X } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { getFileForDownload } from "@/lib/supabase/server";
 import {
   AlertDialog,
@@ -23,6 +23,8 @@ export function FileDownload({
   fileName,
   showPreview = true,
 }: FileDownloadProps) {
+  const { toast } = useToast()
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const defaultFileName = fileName || url.split("/").pop() || "download";
