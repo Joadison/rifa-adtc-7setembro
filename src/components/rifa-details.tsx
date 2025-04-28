@@ -5,8 +5,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Info, Calendar, Tag, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Info,
+  Calendar,
+  Tag,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 import { ParticipationForm } from "@/components/participation-form";
 import { NumberSelector } from "@/components/number-selector";
 import type { Rifa } from "@/lib/supabase/types";
@@ -27,18 +33,27 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
       setSelectedNumbers([...selectedNumbers, number]);
     }
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <Link
-        href="/"
-        className="flex items-center text-primary mb-6 hover:text-primary/80 transition-colors"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Voltar para a página inicial
-      </Link>
+      <div className="flex justify-between">
+        <Link
+          href="/"
+          className="flex items-center text-primary mb-6 hover:text-primary/80 transition-colors"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para a página inicial
+        </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Link
+          href={`/searchcpf`}
+          className="flex items-center text-primary mb-6 hover:text-primary/80 transition-colors"
+        >
+          Veja o seu Número <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <div className="mb-6">
             <div className="flex justify-between items-start mb-2">
@@ -88,24 +103,23 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-2 bg-muted/50">
-              <TabsTrigger
-                value="info"
-                className="data-[state=active]:bg-primary data-[state=active]:text-white"
-              >
-                Informações
-              </TabsTrigger>
-              <TabsTrigger
-                value="numbers"
-                className="data-[state=active]:bg-primary data-[state=active]:text-white"
-              >
-                Escolher Números
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="info" className="mt-4">
-              <Card className="border-2 border-primary/20">
-                <CardContent className="pt-6">
+          {activeTab === "form" ? (
+            <Card className="border-2 border-primary/20">
+              <CardContent>
+                <h3 className="font-medium mb-4 text-primary">
+                  Preencha seus dados para participar
+                </h3>
+                <ParticipationForm
+                  selectedNumbers={selectedNumbers}
+                  totalValue={selectedNumbers.length * rifa.price}
+                  rifaId={rifa.id}
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card className="border-2 border-primary/20 my-2">
+                <CardContent>
                   <div className="space-y-4">
                     <div className="flex gap-2 items-start">
                       <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -158,10 +172,9 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-            <TabsContent value="numbers" className="mt-4">
-              <Card className="border-2 border-primary/20">
-                <CardContent className="pt-6">
+
+              <Card className="border-2 border-primary/20 my-2">
+                <CardContent>
                   <h3 className="font-medium mb-4 text-primary">
                     Selecione seus números da sorte
                   </h3>
@@ -171,46 +184,10 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
                     selectedNumbers={selectedNumbers}
                     onNumberSelect={handleNumberSelect}
                   />
-
-                  <div className="mt-4 p-4 bg-primary/5 rounded-md border border-primary/20">
-                    <div className="flex justify-between mb-2">
-                      <span>Números selecionados:</span>
-                      <span className="font-medium">
-                        {selectedNumbers.length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between mb-4">
-                      <span>Valor total:</span>
-                      <span className="font-medium text-primary">
-                        R$ {(selectedNumbers.length * rifa.price).toFixed(2)}
-                      </span>
-                    </div>
-                    <Button
-                      className="w-full"
-                      disabled={selectedNumbers.length === 0}
-                      onClick={() => setActiveTab("form")}
-                    >
-                      Continuar para o cadastro
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-            <TabsContent value="form" className="mt-4">
-              <Card className="border-2 border-primary/20">
-                <CardContent className="pt-6">
-                  <h3 className="font-medium mb-4 text-primary">
-                    Preencha seus dados para participar
-                  </h3>
-                  <ParticipationForm
-                    selectedNumbers={selectedNumbers}
-                    totalValue={selectedNumbers.length * rifa.price}
-                    rifaId={rifa.id}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            </>
+          )}
         </div>
 
         <div>
@@ -264,11 +241,11 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
                 <Button
                   className="w-full"
                   disabled={selectedNumbers.length === 0}
-                  onClick={() => setActiveTab("form")}
+                  onClick={() =>
+                    setActiveTab(activeTab === "form" ? "info" : "form")
+                  }
                 >
-                  {activeTab === "form"
-                    ? "Preencher formulário"
-                    : "Continuar para o cadastro"}
+                  {activeTab === "form" ? "Voltar" : "Preencher formulário"}
                 </Button>
               </div>
             </CardContent>

@@ -110,7 +110,7 @@ export function NumberSelector({
         </div>
       )}
 
-      <div className="flex gap-4 mt-6 text-sm">
+      <div className="flex flex-col md:flex-row gap-4 mt-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded-sm bg-primary"></div>
           <span>Selecionado</span>

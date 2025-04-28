@@ -117,15 +117,9 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
     },
     {
       accessorKey: "phone",
-      enableHiding: true,
-      enableGlobalFilter: true,
-    },
-    {
-      accessorKey: "email",
       header: "Contato",
-      enableSorting: false,
+      enableGlobalFilter: true,
       cell({ row }) {
-        const Email = row.original.email;
         const Phone = row.original.phone;
         const quantidade = row.original.participant_numbers?.length || 0;
         const rifa = filteredRifas.find((r) =>
@@ -139,7 +133,6 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         )}.%0APor gentileza, poderia enviar o comprovante de pagamento quando possível?%0A%0AFico à disposição. Deus abençoe!`;
         return (
           <div className="flex flex-col">
-            <span>{Email}</span>
             <span> {Phone}</span>
             <Link
               href={`https://wa.me/55${Phone}?text=${message}`}
@@ -267,11 +260,6 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
       enableSorting: false,
     },
     {
-      accessorKey: "email",
-      header: "Email",
-      enableSorting: false,
-    },
-    {
       accessorKey: "created_at",
       header: "Data de Criação",
       enableSorting: false,
@@ -352,7 +340,6 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
     const headers = [
       "Nome",
       "Telefone",
-      "Email",
       "Método de Pagamento",
       "Status de Pagamento",
       "Pontos",
@@ -374,7 +361,6 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
       return [
         `"${participant.full_name?.replace(/"/g, '""')}"`, // Escapa aspas
         participant.phone,
-        participant.email,
         participant.payment_method === "pix" ? "PIX" : "Dinheiro",
         participant.payment_status === "confirmed" ? "Confirmado" : "Pendente",
         `"${pontos?.replace(/"/g, '""')}"`, // Escapa aspas

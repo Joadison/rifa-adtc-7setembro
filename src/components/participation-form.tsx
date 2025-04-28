@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,6 @@ interface ParticipationFormProps {
 const formSchema = z.object({
   fullName: z.string().min(5, "Nome completo deve ter pelo menos 5 caracteres"),
   cpf: z.string().refine(validateCPF, "CPF inválido"),
-  email: z.string().email("Email inválido"),
   phone: z.string().min(10, "Telefone inválido"),
   address: z.string().min(10, "Endereço deve ter pelo menos 10 caracteres"),
   city: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres"),
@@ -57,15 +56,17 @@ export function ParticipationForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
 
   const payloadPix = geradorPix(totalValue);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: JSON.parse(
+      localStorage.getItem("participationForm") || "null"
+    ) || {
       fullName: "",
       cpf: "",
-      email: "",
       phone: "",
       address: "",
       city: "",
@@ -74,6 +75,13 @@ export function ParticipationForm({
       paymentMethod: "pix",
     },
   });
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      localStorage.setItem("participationForm", JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (selectedNumbers.length === 0) {
@@ -84,7 +92,14 @@ export function ParticipationForm({
 
     try {
       let proofOfPaymentUrl = null;
-      if (proofFile && values.paymentMethod === "pix") {
+      if (values.paymentMethod === "pix") {
+        if (!proofFile) {
+          setIsSubmitting(false);
+          setError(
+            "Por favor, envie o comprovante de pagamento (PDF ou imagem)."
+          );
+          return;
+        }
         try {
           const fileExt = proofFile.name.split(".").pop();
           const fileName = `${Date.now()}.${fileExt}`;
@@ -99,8 +114,6 @@ export function ParticipationForm({
               `Erro ao fazer upload do arquivo: ${error.message}`
             );
           }
-
-          // Obter URL pública do arquivo
           const { data: urlData } = supabase.storage
             .from("rifas")
             .getPublicUrl(filePath);
@@ -109,12 +122,10 @@ export function ParticipationForm({
           console.error("Erro no upload:", uploadError);
         }
       }
-
       const luckyNumber = getRandomNumber(100000, 999999).toString();
       const participantData = {
         full_name: values.fullName,
         cpf: values.cpf.replace(/[^\d]/g, ""),
-        email: values.email,
         phone: values.phone.replace(/[^\d]/g, ""),
         address: values.address,
         city: values.city,
@@ -127,6 +138,7 @@ export function ParticipationForm({
       };
 
       try {
+        localStorage.removeItem("participationForm");
         const newParticipant = await createParticipant(participantData);
         await saveParticipantNumbers(
           newParticipant.id,
@@ -152,8 +164,18 @@ export function ParticipationForm({
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setProofFile(e.target.files[0]);
+    const uploadedFile = e.target.files?.[0];
+    if (!uploadedFile) return;
+
+    const isPdf = uploadedFile.type === "application/pdf";
+    const isImage = uploadedFile.type.startsWith("image/");
+
+    if (!isPdf && !isImage) {
+      setError("Por favor, envie um arquivo PDF ou imagem (JPG/PNG).");
+      setProofFile(null);
+    } else {
+      setError("");
+      setProofFile(uploadedFile);
     }
   };
 
@@ -205,24 +227,6 @@ export function ParticipationForm({
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Digite seu email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="phone"
@@ -312,15 +316,21 @@ export function ParticipationForm({
               <p className="text-sm mb-2">
                 Faça o pagamento via PIX para a chave abaixo:
               </p>
-              <div className="flex justify-left my-4">
-                <QRCodeSVG value={payloadPix} size={200} className="boder border-2"/>
+              <div className="flex justify-center my-4">
+                <QRCodeSVG
+                  value={payloadPix}
+                  size={200}
+                  className="boder border-2"
+                />
               </div>
               <div
-                className="p-2 bg-background rounded border mb-2"
+                className="p-3 bg-background rounded-lg border mb-4 cursor-pointer transition hover:bg-muted"
                 onClick={handleCopy}
                 title="Clique para copiar"
               >
-                <p className="font-mono text-sm select-all">{payloadPix}</p>
+                <p className="font-mono text-xs sm:text-sm md:text-base break-words select-all">
+                  {payloadPix}
+                </p>
               </div>
               {copied && (
                 <span className="text-xs text-green-500">Copiado PIX!</span>
@@ -340,33 +350,28 @@ export function ParticipationForm({
               <Label htmlFor="proofOfPayment">Comprovante de Pagamento</Label>
               <div className="mt-1">
                 <Label
+                  className="flex items-center justify-center gap-2 border border-dashed border-primary rounded-md p-4 cursor-pointer hover:bg-muted transition"
                   htmlFor="proofOfPayment"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-md cursor-pointer hover:bg-primary/5 transition-colors"
                 >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-2 text-primary" />
-                    <p className="mb-1 text-sm text-muted-foreground">
-                      <span className="font-medium">Clique para enviar</span> ou
-                      arraste e solte
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PNG, JPG ou PDF (máx. 10MB)
-                    </p>
-                  </div>
-                  <Input
-                    id="proofOfPayment"
-                    type="file"
-                    className="hidden"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={handleFileChange}
-                  />
+                  <Upload className="w-5 h-5" />
+                  {proofFile
+                    ? proofFile.name
+                    : "Clique para enviar comprovante"}
                 </Label>
+                <Input
+                  id="proofOfPayment"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,image/*"
+                  onChange={handleFileChange}
+                />
               </div>
               {proofFile && (
                 <p className="mt-2 text-sm text-muted-foreground">
                   Arquivo selecionado: {proofFile.name}
                 </p>
               )}
+              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
           </div>
         </div>
@@ -375,7 +380,9 @@ export function ParticipationForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={isSubmitting || selectedNumbers.length === 0}
+            disabled={
+              isSubmitting && selectedNumbers.length === 0 && !proofFile
+            }
           >
             {isSubmitting ? (
               <>
