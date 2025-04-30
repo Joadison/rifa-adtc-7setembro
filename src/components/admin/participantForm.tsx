@@ -23,7 +23,7 @@ export function ParticipantForm({
   const setField = (name: keyof Participant, value: string | undefined) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -65,43 +65,39 @@ export function ParticipantForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="full_name">Nome Completo</Label>
-          <Input
-            id="full_name"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="grid gap-6 p-4 rounded-xl bg-white shadow-md">
+      <div className="grid gap-2">
+        <Label htmlFor="full_name">Nome Completo</Label>
+        <Input
+          id="full_name"
+          name="full_name"
+          value={formData.full_name}
+          onChange={handleChange}
+        />
+      </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="payment_status"
-            checked={formData.payment_status === "confirmed"}
-            onCheckedChange={(checked) => {
-              setFormData({
-                ...formData,
-                payment_status: checked ? "confirmed" : "pending",
-              });
-            }}
-          />
-          <Label htmlFor="payment_status">
-            {formData.payment_status === "confirmed"
-              ? "Confirmado"
-              : "Pendente"}
-          </Label>
-        </div>
+      <div className="flex items-center gap-3">
+        <Checkbox
+          id="payment_status"
+          checked={formData.payment_status === "confirmed"}
+          onCheckedChange={(checked) => {
+            setFormData({
+              ...formData,
+              payment_status: checked ? "confirmed" : "pending",
+            });
+          }}
+        />
+        <Label htmlFor="payment_status">
+          {formData.payment_status === "confirmed" ? "Confirmado" : "Pendente"}
+        </Label>
         {formData.payment_status === "confirmed" && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             Status: confirmed
           </span>
         )}
       </div>
 
-      <div>
+      <div className="grid gap-2">
         <Label htmlFor="proofOfPayment">Comprovante de Pagamento</Label>
         <div className="mt-1">
           <Label

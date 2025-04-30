@@ -110,7 +110,6 @@ export async function updateParticipantSimple(
   participantId: string,
   updates: {
     full_name?: string
-    email?: string
     phone?: string
     payment_status?: string
     proof_of_payment_url?: string
@@ -120,7 +119,6 @@ export async function updateParticipantSimple(
     const { data, error } = await supabaseAdmin.rpc("update_participant", {
       p_id: participantId,
       p_full_name: updates.full_name,
-      p_email: updates.email,
       p_phone: updates.phone,
       p_payment_status: updates.payment_status,
       p_proof_of_payment_url: updates.proof_of_payment_url,
@@ -166,7 +164,7 @@ export async function getFileForDownload(fileUrl: string) {
 
 //Função delete participant
 export async function deletParticipant(participantId: string) {
-  try{
+  try {
     const { data: participantNumbers, error: fetchError } = await supabaseAdmin
       .from("participant_numbers")
       .select("id, rifa_id")
@@ -176,7 +174,7 @@ export async function deletParticipant(participantId: string) {
       console.error("Erro ao buscar participant_numbers:", fetchError);
       throw fetchError;
     }
-    
+
     if (!participantNumbers || participantNumbers.length === 0) {
       console.warn("Nenhum número encontrado para esse participante.");
       return { success: false, message: "Nenhum número associado ao participante." };
@@ -184,7 +182,7 @@ export async function deletParticipant(participantId: string) {
 
     const soldToRemove = participantNumbers.length;
     const rifaId = participantNumbers[0].rifa_id;
-    
+
     const { data: rifaData, error: fetchRifaError } = await supabaseAdmin
       .from("rifas")
       .select("sold_numbers")

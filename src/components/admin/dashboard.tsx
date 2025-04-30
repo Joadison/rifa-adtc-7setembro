@@ -31,6 +31,7 @@ import { FileDownload } from "../file-download";
 import { AdminHeader } from "./header";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "../DataTable";
+import { useRouter } from "next/navigation";
 
 interface AdminDashboardProps {
   rifas: Rifa[];
@@ -38,6 +39,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [paymentFilter, setPaymentFilter] = useState<
@@ -66,6 +68,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         description: `Deletado Participante com sucesso.`,
       });
       setDelet(null);
+      router.refresh();
     } catch (error) {
       console.error("Erro ao deletar participante:", error);
       toast({
@@ -84,6 +87,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         description: `Atulizado Participante com sucesso.`,
       });
       setEditingParticipant(null);
+      router.refresh();
     } catch (error) {
       console.error("Erro ao atualizar participante:", error);
       toast({
@@ -116,7 +120,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
       enableGlobalFilter: true,
     },
     {
-      accessorKey: "phone",
+      accessorKey: "id",
       header: "Contato",
       enableGlobalFilter: true,
       cell({ row }) {
