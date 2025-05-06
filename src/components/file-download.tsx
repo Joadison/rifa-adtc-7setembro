@@ -15,19 +15,28 @@ import {
 interface FileDownloadProps {
   url: string;
   fileName?: string;
-  showPreview?: boolean;
 }
 
 export function FileDownload({
   url,
-  fileName,
-  showPreview = true,
+  fileName
 }: FileDownloadProps) {
   const { toast } = useToast()
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const defaultFileName = fileName || url.split("/").pop() || "download";
+
+  function ajustarNomeArquivo(originalName: string, mimeType: string) {
+    const partes = originalName.split('-');
+    const cpf = partes[1];
+    let extensao = '';
+    if (mimeType === 'image/jpeg') extensao = 'jpeg';
+    else if (mimeType === 'image/png') extensao = 'png';
+    else if (mimeType === 'application/pdf') extensao = 'pdf';
+    else extensao = 'file';
+    return `${cpf}.${extensao}`;
+  }
 
   const handleDownload = async () => {
     try {
@@ -46,11 +55,11 @@ export function FileDownload({
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = defaultFileName;
+      link.download = ajustarNomeArquivo(defaultFileName, blob.type);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      window.URL.revokeObjectURL(blobUrl); 
 
       toast({
         title: "Download concluído",
@@ -76,7 +85,6 @@ export function FileDownload({
         throw new Error(result.error || "Erro ao obter URL para download");
       }
 
-      // Buscar o arquivo como um Blob
       const response = await fetch(result.url);
       if (!response.ok) {
         throw new Error("Erro ao buscar o arquivo para visualização.");
@@ -85,7 +93,6 @@ export function FileDownload({
       const blob = await response.blob();
       const base64 = await convertBlobToBase64(blob);
 
-      // Definir a URL base64 como o conteúdo do PDF
       setFilePreviewUrl(base64);
     } catch (error) {
       console.error("Erro ao carregar visualização:", error);
@@ -97,7 +104,6 @@ export function FileDownload({
     }
   };
 
-  // Função para converter o Blob em Base64
   const convertBlobToBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

@@ -95,23 +95,6 @@ export async function updateRifaSoldNumbers(rifaId: string, soldCount: number) {
   return data[0] as Rifa
 }
 
-/* export async function uploadPaymentProof(file: File, participantId: string) {
-  const fileExt = file.name.split(".").pop()
-  const fileName = `${participantId}-${Date.now()}.${fileExt}`
-  const filePath = `payment_proofs/${fileName}`
-
-  const { data, error } = await supabase.storage.from("rifas").upload(filePath, file)
-
-  if (error) {
-    console.error("Error uploading payment proof:", error)
-    throw error
-  }
-
-  const { data: urlData } = supabase.storage.from("rifas").getPublicUrl(filePath)
-
-  return urlData.publicUrl
-} */
-
 export async function getParticipantsByRifaId(rifaId: string) {
   const { data, error } = await supabase
     .from("participants")
@@ -128,20 +111,6 @@ export async function getParticipantsByRifaId(rifaId: string) {
 
   return data as Participant[]
 }
-
-/* export async function getParticipantNumbers(participantId: string) {
-  const { data, error } = await supabase
-    .from("participant_numbers")
-    .select("number")
-    .eq("participant_id", participantId)
-
-  if (error) {
-    console.error(`Error fetching numbers for participant ${participantId}:`, error)
-    return []
-  }
-
-  return data.map((item) => item.number)
-} */
 
 export async function getParticipantCPF(cpf: string) {
   const { data: participants, error: participantsError } = await supabase

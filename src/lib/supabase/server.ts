@@ -4,8 +4,6 @@ import { createClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 
-// Cliente Supabase com service_role para operações administrativas
-// IMPORTANTE: Isso só funciona no servidor
 const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
   auth: {
     autoRefreshToken: false,
@@ -13,7 +11,6 @@ const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, proces
   },
 })
 
-// Função para login de administrador
 export async function adminLogin(email: string, password: string) {
   const cookieStore = cookies()
   const supabase = createServerActionClient({ cookies: () => cookieStore })
@@ -54,7 +51,6 @@ export async function adminLogin(email: string, password: string) {
   }
 }
 
-// Função para logout
 export async function adminLogout() {
   const cookieStore = cookies()
   const supabase = createServerActionClient({ cookies: () => cookieStore })
@@ -68,7 +64,6 @@ export async function adminLogout() {
   }
 }
 
-// Função para criar o usuário administrador (executar apenas uma vez)
 export async function createAdminUser(email: string, password: string) {
   try {
     // Verificar se já existe um admin
@@ -105,7 +100,6 @@ export async function createAdminUser(email: string, password: string) {
   }
 }
 
-// Função para update o usuário administrador
 export async function updateParticipantSimple(
   participantId: string,
   updates: {
@@ -135,7 +129,6 @@ export async function updateParticipantSimple(
   }
 }
 
-//Função Download File
 export async function getFileForDownload(fileUrl: string) {
   try {
     const storageBaseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
@@ -162,7 +155,6 @@ export async function getFileForDownload(fileUrl: string) {
   }
 }
 
-//Função delete participant
 export async function deletParticipant(participantId: string) {
   try {
     const { data: participantNumbers, error: fetchError } = await supabaseAdmin
