@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ColumnDef, Table } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { BarChart3, Download, Home, Pencil, Trash2, Users } from "lucide-react";
 import { type Rifa, type Participant } from "@/lib/supabase/types";
 import {
@@ -32,6 +32,7 @@ import { AdminHeader } from "./header";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "../DataTable";
 import { useRouter } from "next/navigation";
+import { geradorPix } from "@/lib/utils";
 
 interface AdminDashboardProps {
   rifas: Rifa[];
@@ -50,6 +51,10 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
   const [editingParticipant, setEditingParticipant] =
     useState<Participant | null>(null);
   const [delet, setDelet] = useState<string | null>(null);
+
+  const pendingParticipants = participants.filter(
+    (participant) => participant.payment_status !== "confirmed"
+  );
 
   const handleEditParticipant = (participant: Participant) => {
     setEditingParticipant(participant);
@@ -135,6 +140,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         }, no valor total de R$${total.toFixed(
           2
         )}.%0APor gentileza, poderia enviar o comprovante de pagamento quando possível?%0A%0AFico à disposição. Deus abençoe!`;
+        const messagePix = geradorPix(total);
         return (
           <div className="flex flex-col">
             <span> {Phone}</span>
@@ -145,6 +151,14 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
               className="text-green-600 underline"
             >
               Enviar mensagem no WhatsApp
+            </Link>
+             <Link
+              href={`https://wa.me/55${Phone}?text=${messagePix}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Enviar Pix WhatsApp
             </Link>
           </div>
         );
@@ -296,49 +310,6 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
     },
   ];
 
-  const columnsRifas: ColumnDef<Rifa>[] = [
-    {
-      accessorKey: "title",
-      header: "Rifa",
-      enableSorting: false,
-    },
-    {
-      accessorKey: "sold_numbers",
-      header: "Vendidos",
-      enableSorting: false,
-      cell({ row }) {
-        return row.original.sold_numbers;
-      },
-    },
-    {
-      accessorKey: "end_date",
-      header: "Data Sorteio",
-      enableSorting: false,
-      cell({ row }) {
-        return new Date(row.original.end_date).toLocaleDateString("pt-BR");
-      },
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      enableSorting: false,
-      cell({ row }) {
-        return (
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="bg-primary h-2 rounded-full"
-              style={{
-                width: `${
-                  (row.original.sold_numbers / row.original.total_numbers) * 100
-                }%`,
-              }}
-            ></div>
-          </div>
-        );
-      },
-    },
-  ];
-
   const handleExportToCSV = () => {
     // Cabeçalhos do CSV com caracteres corretos
     const headers = [
@@ -483,7 +454,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 Dashboard
               </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -522,22 +493,9 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Rifas Ativas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-primary">
-                      {activeRifas}
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Últimas Participações</CardTitle>
@@ -546,19 +504,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <DataTable columns={columnsD} data={participants} />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Rifas Ativas</CardTitle>
-                    <CardDescription>
-                      Status das rifas em andamento
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <DataTable columns={columnsRifas} data={rifas} />
+                    <DataTable columns={columnsD} data={pendingParticipants} />
                   </CardContent>
                 </Card>
               </div>
@@ -633,12 +579,13 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
           </TabsContent> */}
 
             <TabsContent value="participants">
-              <div className="flex justify-between items-center mb-6">
+              <div className="grid grid-cols-1">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <h1 className="text-3xl font-bold text-primary">
                   Participantes
                 </h1>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleExportToCSV}>
+                <div className="flex flex-row gap-2">
+                  <Button variant="outline" onClick={handleExportToCSV} className="w-full md:w-auto">
                     <Download className="mr-2 h-4 w-4" />
                     Exportar
                   </Button>
@@ -667,6 +614,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 data={participants}
                 initialFilter={paymentFilter}
               />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
