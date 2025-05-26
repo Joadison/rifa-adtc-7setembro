@@ -37,9 +37,10 @@ export default async function Home() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text">
             Contribua com Amor
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Participe de nossas rifas online de forma rápida e segura. Escolha
-            seus números da sorte e concorra a prêmio incrível!
+          <p className="text-xl text-muted-foreground mx-auto">
+            Participe da nossa rifa online de forma rápida e segura. Escolha
+            seus números da sorte e concorra a um prêmio especial, ajudando
+            nossa igreja!
           </p>
         </div>
       </header>
@@ -51,10 +52,9 @@ export default async function Home() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-110">
               <Ticket className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-125" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Escolha sua Rifa</h3>
+            <h3 className="text-xl font-semibold mb-2">Escolha seus Números</h3>
             <p className="text-muted-foreground">
-              Navegue pelas rifas disponíveis e escolha a que mais lhe
-              interessa.
+              Navegue pelos números disponíveis e escolha seus favoritos.
             </p>
           </div>
           <div className="flex flex-col items-center text-center">
@@ -63,17 +63,18 @@ export default async function Home() {
             </div>
             <h3 className="text-xl font-semibold mb-2">Preencha seus Dados</h3>
             <p className="text-muted-foreground">
-              Informe seus dados pessoais e escolha seus números da sorte.
+              Preencha seus dados e envie o comprovante do PIX para confirmar
+              sua participação.
             </p>
           </div>
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-110">
               <Award className="h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-125" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Concorra aos Prêmios</h3>
+            <h3 className="text-xl font-semibold mb-2">Concorra ao Prêmio</h3>
             <p className="text-muted-foreground">
-              Após a confirmação do pagamento, você já está concorrendo aos
-              prêmios.
+              Confirmou o pagamento? Pronto! Agora você está concorrendo ao
+              prêmio de 5 mil Reais!
             </p>
           </div>
         </div>
@@ -82,25 +83,15 @@ export default async function Home() {
       <section className="grid grid-cols-1">
         {rifas.slice(0, 3).map((rifa) => (
           <Card key={rifa.id} className="border-2 border-primary/20 rifa-card">
-            <div className="absolute top-2 right-2">
-              <Badge
-                variant="outline"
-                className="bg-green-50 text-green-700 border-green-200"
-              >
-                {rifa.status === "active"
-                  ? "Ativa"
-                  : rifa.status === "completed"
-                  ? "Concluída"
-                  : "Cancelada"}
-              </Badge>
-            </div>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Ticket className="h-5 w-5 text-primary" />
-                Rifa{" "}
-                {rifa.title.length > 20
-                  ? rifa.title.substring(0, 20) + "..."
-                  : rifa.title}
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Ticket className="h-5 w-5 text-primary" />
+                  Rifa{" "}
+                  {rifa.title.length > 20
+                    ? rifa.title.substring(0, 20) + "..."
+                    : rifa.title}
+                </div>
               </CardTitle>
               <CardDescription>
                 Sorteio em {new Date(rifa.end_date).toLocaleDateString("pt-BR")}

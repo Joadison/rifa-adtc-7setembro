@@ -36,20 +36,20 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-6">
         <Link
           href="/"
-          className="flex items-center text-primary mb-6 hover:text-primary/80 transition-colors"
+          className="flex items-center text-left text-primary hover:text-primary/80 transition-colors gap-2"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para a página inicial
+          <ArrowLeft className="h-4 w-4" />
+          Início
         </Link>
 
         <Link
-          href={`/searchcpf`}
-          className="flex items-center text-primary mb-6 hover:text-primary/80 transition-colors"
+          href="/searchcpf"
+          className="flex items-center text-right text-primary hover:text-primary/80 transition-colors gap-2"
         >
-          Veja o seu Número <ArrowRight className="ml-2 h-4 w-4" />
+          Veja o seu Número <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
