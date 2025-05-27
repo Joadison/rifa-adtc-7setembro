@@ -189,6 +189,11 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
       },
     },
     {
+      accessorKey: "cpf",
+      header: "CPF",
+      enableSorting: true,
+    },
+    {
       accessorKey: "payment_status",
       header: "Tipo",
       enableSorting: false,
@@ -314,6 +319,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
     // Cabeçalhos do CSV com caracteres corretos
     const headers = [
       "Nome",
+      "CPF",
       "Telefone",
       "Método de Pagamento",
       "Status de Pagamento",
@@ -335,6 +341,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
 
       return [
         `"${participant.full_name?.replace(/"/g, '""')}"`, // Escapa aspas
+        participant.cpf,
         participant.phone,
         participant.payment_method === "pix" ? "PIX" : "Dinheiro",
         participant.payment_status === "confirmed" ? "Confirmado" : "Pendente",

@@ -22,6 +22,7 @@ import { Loader2, Upload } from "lucide-react";
 import { geradorPix, getRandomNumber, validateCPF } from "@/lib/utils";
 import {
   createParticipant,
+  getParticipantCPF,
   getSoldNumbersByRifaId,
   saveParticipantNumbers,
   supabase,
@@ -57,6 +58,8 @@ export function ParticipationForm({
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [visible, setVisible] = useState(false);
+  const cpfCache = new Set<string>();
 
   const payloadPix = geradorPix(totalValue);
 
@@ -77,6 +80,34 @@ export function ParticipationForm({
   });
 
   useEffect(() => {
+    const subscription = form.watch(async (value) => {
+      const cpf = value?.cpf;
+      if (cpf && cpf.length === 11 && !cpfCache.has(cpf)) {
+        const fetchUserByCPF = async () => {
+          try {
+            const user = await getParticipantCPF(cpf);
+            const participante = Array.isArray(user) ? user[0] : user;
+            if (participante) {
+              cpfCache.add(cpf);
+              form.setValue("fullName", participante.full_name || "");
+              form.setValue("phone", participante.phone || "");
+              form.setValue("address", participante.address || "");
+              form.setValue("city", participante.city || "");
+              form.setValue("state", participante.state || "");
+              form.setValue("zipCode", participante.zip_code || "");
+            }
+          } catch (err) {
+            console.error("Erro ao buscar CPF:", err);
+          }
+        };
+        fetchUserByCPF();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  useEffect(() => {
     const subscription = form.watch((value) => {
       localStorage.setItem("participationForm", JSON.stringify(value));
     });
@@ -92,14 +123,14 @@ export function ParticipationForm({
 
     try {
       let proofOfPaymentUrl = null;
-      if (values.paymentMethod === "pix") {
-        if (!proofFile) {
+      if (values.paymentMethod === "pix" && proofFile) {
+       /*  if (!proofFile) {
           setIsSubmitting(false);
           setError(
             "Por favor, envie o comprovante de pagamento (PDF ou imagem)."
           );
           return;
-        }
+        } */
         try {
           const fileExt = proofFile.name.split(".").pop();
           const fileName = `${Date.now()}.${fileExt}`;
@@ -316,25 +347,37 @@ export function ParticipationForm({
               <p className="text-sm mb-2">
                 Faça o pagamento via PIX para a chave abaixo:
               </p>
-              <div className="flex justify-center my-4">
-                <QRCodeSVG
-                  value={payloadPix}
-                  size={200}
-                  className="boder border-2"
-                />
+              <div className="flex flex-col text-center">
+                <Button
+                  type="button"
+                  className="p-3 rounded-lg border mb-4 cursor-pointer transition"
+                  onClick={handleCopy}
+                  title="Clique para copiar pix"
+                >
+                  Copiar Código PIX
+                </Button>
+                {copied && (
+                  <span className="text-xs text-green-500">Copiado PIX!</span>
+                )}
               </div>
-              <div
-                className="p-3 bg-background rounded-lg border mb-4 cursor-pointer transition hover:bg-muted"
-                onClick={handleCopy}
-                title="Clique para copiar"
-              >
-                <p className="font-mono text-xs sm:text-sm md:text-base break-words select-all">
-                  {payloadPix}
-                </p>
+
+              <div className="flex flex-col">
+                <Button
+                  type="button"
+                  className="flex justify-center my-4"
+                  onClick={() => setVisible(true)}
+                  title="Clique para ver o QR Code"
+                >
+                  Ver QR Code
+                </Button>
+                {visible && (
+                  <QRCodeSVG
+                    value={payloadPix}
+                    size={200}
+                    className="border-2 w-auto"
+                  />
+                )}
               </div>
-              {copied && (
-                <span className="text-xs text-green-500">Copiado PIX!</span>
-              )}
               <p className="text-sm mb-2">
                 Valor:{" "}
                 <span className="font-medium text-primary">

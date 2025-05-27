@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filtro Nome, Email e Telefone"
+          placeholder="Filtro Nome, CPF, Email e Telefone"
           value={globalFilterValue}
           onChange={(event) => setGlobalFilterValue(event.target.value)}
           className="max-w-sm"
