@@ -69,12 +69,12 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
                   : "Cancelada"}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground mb-4">
+            {/* <div className="flex items-center gap-2 text-muted-foreground mb-4">
               <Calendar className="h-4 w-4 text-secondary" />
-              <span>
+               <span>
                 Sorteio: {new Date(rifa.end_date).toLocaleDateString("pt-BR")}
-              </span>
-            </div>
+              </span> 
+            </div>*/}
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm mb-1">
                 <div className="flex items-center">

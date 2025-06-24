@@ -3,18 +3,23 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
+  //CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Ticket, Users, Award, ArrowRight, Trophy } from "lucide-react";
+import {
+  Ticket,
+  Users,
+  Award,
+  ArrowRight,
+  Trophy,
+} from "lucide-react";
 import { getRifas } from "@/lib/supabase/client";
+//import { Footer } from "@/components/footer";
 
 export default async function Home() {
   const rifas = await getRifas();
-
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 mb-10">
@@ -93,9 +98,9 @@ export default async function Home() {
                     : rifa.title}
                 </div>
               </CardTitle>
-              <CardDescription>
+              {/* <CardDescription>
                 Sorteio em {new Date(rifa.end_date).toLocaleDateString("pt-BR")}
-              </CardDescription>
+              </CardDescription> */}
             </CardHeader>
             <CardContent>
               <div className="w-full max-w-[100rem] h-[500px] bg-muted rounded-md flex items-center justify-center mb-4 overflow-hidden mx-auto">
@@ -143,6 +148,8 @@ export default async function Home() {
           </Card>
         ))}
       </section>
+
+      {/* <Footer/> */}
     </div>
   );
 }

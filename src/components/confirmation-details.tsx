@@ -62,10 +62,10 @@ export function ConfirmationDetails({
             <p>{rifa.title}</p>
           </div>
 
-          <div className="p-4 bg-muted rounded-md">
+          {/* <div className="p-4 bg-muted rounded-md">
             <h3 className="font-medium mb-1">Data do Sorteio</h3>
             <p>{new Date(rifa.end_date).toLocaleDateString("pt-BR")}</p>
-          </div>
+          </div> */}
 
           <div className="text-sm text-muted-foreground mt-4">
             <p>Enviamos um email com os detalhes da sua participação.</p>
