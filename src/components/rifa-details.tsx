@@ -241,9 +241,10 @@ export function RifaDetails({ rifa, soldNumbers }: RifaDetailsProps) {
                 <Button
                   className="w-full"
                   disabled={selectedNumbers.length === 0}
-                  onClick={() =>
-                    setActiveTab(activeTab === "form" ? "info" : "form")
-                  }
+                  onClick={() => {
+                    setActiveTab(activeTab === "form" ? "info" : "form");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                 >
                   {activeTab === "form" ? "Voltar" : "Preencher formulário"}
                 </Button>
