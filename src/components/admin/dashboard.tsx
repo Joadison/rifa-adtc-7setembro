@@ -103,15 +103,29 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
     }
   };
 
-  const totalParticipants = filteredParticipants.length;
-  const activeRifas = filteredRifas.filter(
+  /*  const activeRifas = filteredRifas.filter(
     (rifa) => rifa.status === "active"
-  ).length;
+  ).length; */
 
-  const totalSoldNumbers = filteredRifas.reduce(
-    (acc, rifa) => acc + rifa.sold_numbers,
-    0
-  );
+  const totalParticipants = filteredParticipants.length;
+  const totalParticipantsPagos =
+    filteredParticipants
+      .filter((p) => p.payment_status === "confirmed")
+      .reduce((acc, p) => acc + (p.participant_numbers?.length || 0), 0) *
+    rifas[0].price;
+  const totalNumNotPAgos = filteredParticipants
+    .filter((p) => p.payment_status === "pending")
+    .reduce((acc, p) => acc + (p.participant_numbers?.length || 0), 0);
+
+  const totalDevendo =
+    filteredParticipants
+      .filter((p) => p.payment_status === "pending")
+      .reduce((acc, p) => acc + (p.participant_numbers?.length || 0), 0) *
+    rifas[0].price;
+
+  const totalSoldNumbers = filteredParticipants
+    .filter((p) => p.payment_status === "confirmed")
+    .reduce((acc, p) => acc + (p.participant_numbers?.length || 0), 0);
 
   const totalRevenue = filteredRifas.reduce(
     (acc, rifa) => acc + rifa.sold_numbers * rifa.price,
@@ -152,7 +166,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
             >
               Enviar mensagem no WhatsApp
             </Link>
-             <Link
+            <Link
               href={`https://wa.me/55${Phone}?text=${messagePix}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -245,7 +259,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
         const total = quantidade * (rifa?.price || 0);
         return (
           <div>
-            <strong>R$ {total.toFixed(2)}</strong>
+            <strong>R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
           </div>
         );
       },
@@ -461,7 +475,7 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 Dashboard
               </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -491,12 +505,53 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Receita Total
+                      Receita Atual
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold text-primary">
-                      R$ {totalRevenue.toFixed(2)}
+                      R$ {totalParticipantsPagos.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Números Pedentes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      {totalNumNotPAgos}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Total Devendo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      R$ {totalDevendo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Total Esperado
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </CardContent>
                 </Card>
@@ -587,40 +642,44 @@ export function AdminDashboard({ rifas, participants }: AdminDashboardProps) {
 
             <TabsContent value="participants">
               <div className="grid grid-cols-1">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                <h1 className="text-3xl font-bold text-primary">
-                  Participantes
-                </h1>
-                <div className="flex flex-row gap-2">
-                  <Button variant="outline" onClick={handleExportToCSV} className="w-full md:w-auto">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exportar
-                  </Button>
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      if (paymentFilter?.value === "pending") {
-                        setPaymentFilter(undefined);
-                      } else {
-                        setPaymentFilter({
-                          id: "payment_status",
-                          value: "pending",
-                        });
-                      }
-                    }}
-                  >
-                    {paymentFilter?.value === "pending"
-                      ? "Mostrar Todos"
-                      : "Sem Confirmação"}
-                  </Button>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                  <h1 className="text-3xl font-bold text-primary">
+                    Participantes
+                  </h1>
+                  <div className="flex flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleExportToCSV}
+                      className="w-full md:w-auto"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Exportar
+                    </Button>
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        if (paymentFilter?.value === "pending") {
+                          setPaymentFilter(undefined);
+                        } else {
+                          setPaymentFilter({
+                            id: "payment_status",
+                            value: "pending",
+                          });
+                        }
+                      }}
+                    >
+                      {paymentFilter?.value === "pending"
+                        ? "Mostrar Todos"
+                        : "Sem Confirmação"}
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
-              <DataTable
-                columns={columnsPart}
-                data={participants}
-                initialFilter={paymentFilter}
-              />
+                <DataTable
+                  columns={columnsPart}
+                  data={participants}
+                  initialFilter={paymentFilter}
+                />
               </div>
             </TabsContent>
           </Tabs>
